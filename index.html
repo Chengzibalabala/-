@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>追星MBTI人格测试</title>
+    <style>
+        /* 样式保持不变 */
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{
+          --primary:#ff4d94;
+          --primary-light:#ff8fba;
+          --secondary:#7c3aed;
+          --bg:#fff0f7;
+          --card:#ffffff;
+          --text:#2d1b30;
+          --text-light:#6b5a6e;
+        }
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+        .container{max-width:600px;margin:0 auto;padding:20px;min-height:100vh}
+        .welcome{text-align:center;padding:60px 20px}
+        .welcome h1{font-size:28px;font-weight:800;line-height:1.3;margin-bottom:12px;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .welcome .subtitle{font-size:16px;color:var(--text-light);margin-bottom:40px}
+        .welcome .sparkle{font-size:48px;margin-bottom:20px;display:block;animation:bounce 2s infinite}
+        @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+        .mode-cards{display:flex;flex-direction:column;gap:16px;margin-top:20px}
+        .mode-card{background:var(--card);border-radius:20px;padding:24px;cursor:pointer;border:3px solid transparent;transition:all .3s}
+        .mode-card:hover{transform:translateY(-4px);border-color:var(--primary);box-shadow:0 10px 40px rgba(255,77,148,.2)}
+        .mode-card .tag{display:inline-block;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:700;color:#fff;margin-bottom:10px}
+        .mode-card.quick .tag{background:linear-gradient(135deg,#ff4d94,#ff8fba)}
+        .mode-card.deep .tag{background:linear-gradient(135deg,#7c3aed,#a78bfa)}
+        .mode-card h3{font-size:20px;margin-bottom:8px}
+        .mode-card p{font-size:14px;color:var(--text-light)}
+        .mode-card .meta{display:flex;gap:16px;margin-top:12px;font-size:13px;color:var(--text-light)}
+        .fandom-select{text-align:center;padding:40px 20px}
+        .fandom-select h2{font-size:24px;margin-bottom:8px}
+        .fandom-select p{color:var(--text-light);margin-bottom:32px}
+        .fandom-btns{display:flex;gap:16px;justify-content:center}
+        .fandom-btn{padding:18px 36px;border-radius:16px;font-size:18px;font-weight:700;border:none;cursor:pointer;transition:all .3s;color:#fff}
+        .fandom-btn.cn{background:linear-gradient(135deg,#ff2d55,#ff6b8a)}
+        .fandom-btn.kr{background:linear-gradient(135deg,#00b896,#34d399)}
+        .fandom-btn:hover{transform:scale(1.05)}
+        .quiz-area{padding:10px 0}
+        .progress-bar{height:6px;background:#ffd6e8;border-radius:3px;margin-bottom:24px;overflow:hidden}
+        .progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--secondary));border-radius:3px;transition:width .4s ease}
+        .question-num{font-size:13px;color:var(--text-light);margin-bottom:8px;text-align:center}
+        .question-text{font-size:18px;font-weight:700;line-height:1.5;margin-bottom:24px;text-align:center;min-height:56px}
+        .options{display:flex;flex-direction:column;gap:12px}
+        .option{background:var(--card);border:2px solid #f0d6e9;border-radius:16px;padding:16px 20px;cursor:pointer;transition:all .25s;font-size:15px;line-height:1.5;position:relative}
+        .option:hover{border-color:var(--primary);background:#fff5fa;transform:translateX(4px)}
+        .option.selected{border-color:var(--primary);background:linear-gradient(135deg,#fff0f7,#fce8f5)}
+        .option.selected::after{content:'✓';position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--primary);font-weight:bold;font-size:18px}
+        .option-label{font-size:11px;font-weight:700;color:var(--primary-light);display:block;margin-bottom:4px}
+        .btn-group{display:flex;gap:12px;margin-top:28px}
+        .btn-group button{flex:1;padding:16px;border-radius:16px;font-size:17px;font-weight:700;cursor:pointer;transition:all .3s;border:none;color:#fff}
+        .btn-group .btn-prev{background:linear-gradient(135deg,#7c3aed,#a78bfa)}
+        .btn-group .btn-next{background:linear-gradient(135deg,var(--primary),var(--secondary))}
+        .btn-group button:disabled{opacity:.4;cursor:not-allowed}
+        .result-area{text-align:center;padding:20px 0}
+        .result-type{display:inline-block;padding:8px 28px;border-radius:30px;font-size:42px;font-weight:900;letter-spacing:4px;margin-bottom:8px;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .result-name{font-size:26px;font-weight:800;margin-bottom:8px}
+        .result-tagline{font-size:15px;color:var(--text-light);margin-bottom:24px}
+        .result-desc{background:var(--card);border-radius:20px;padding:24px;text-align:left;margin-bottom:20px;line-height:1.8;font-size:15px}
+        .result-desc strong{color:var(--primary)}
+        .result-bars{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+        .bar-item{text-align:left}
+        .bar-label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;font-weight:600}
+        .bar-track{height:10px;background:#ffe0ef;border-radius:5px;overflow:hidden}
+        .bar-fill{height:100%;border-radius:5px}
+        .share-section{margin-top:20px}
+        .btn-retest{padding:14px 32px;background:var(--card);border:2px solid var(--primary);color:var(--primary);border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;margin-right:12px}
+        .btn-share{padding:14px 32px;background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:button}
+        .deep-analysis{background:var(--card);border-radius:20px;padding:24px;text-align:left;margin-bottom:16px}
+        .deep-analysis h4{color:var(--secondary);margin-bottom:12px;font-size:17px}
+        .deep-analysis p{line-height:1.9;font-size:14.5px;color:var(--text-light)}
+        .deep-analysis .highlight{background:linear-gradient(120deg,#fef3ff 0%,#ede6fe 50%,#fef3ff 100%);padding:16px;border-radius:12px;margin-top:14px;border-left:4px solid var(--secondary)}
+        .fade-in{animation:fadeIn .4s ease}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+        .slide-up{animation:slideUp .5s ease}
+        @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+        @media(max-width:480px){.welcome h1{font-size:24px}.mode-card h3{font-size:18px}.question-text{font-size:16px}.result-type{font-size:36px}}
+    </style>
+</head>
+<body>
+<div class="container" id="app"></div>
+<script>
+// 全局错误处理
+window.addEventListener("error", function(e) {
+    console.log("页面错误:", e.message);
+});
+window.addEventListener("unhandledrejection", function(e) {
+    console.log("未处理的Promise拒绝:", e.reason);
+});
+
+// 修复后的数据对象 - 已修正所有语法错误
+var DIMENSIONS={
+  E:{letter:'E',name:'Exposure'},
+  I:{letter:'I',name:'Introvert'},
+  O:{letter:'O',name:'OneLove'},
+  M:{letter:'M',name:'Multi'},
+  C:{letter:'C',name:'Cash'},
+  D:{letter:'D',name:'Data'},
+  F:{letter:'F',name:'Follow'},
+  Z:{letter:'Z',name:'Zen'}
+};
+
+var RESULTS={quick:{
+EOCF:{type:'EOCF',name:'顶流前线战地记者',tagline:'正主在哪你在哪，钱包和热情同时燃烧🔥',desc:'你是追星圈的<strong>全能战士</strong>！超话签到满级选手，商务代言首发必买，控评投投冲在第一线。'},
+EOCZ:{type:'EOCZ',name:'氪金能力富足唯粉',tagline:'有钱有爱但佛系，快乐追星不内耗',desc:'你是圈里人人羡慕的<strong>存在</strong>！'},
+EODF:{type:'EODF',name:'超话卷王劳模',tagline:'做数据比上班还积极，肝帝本帝😂',desc:'你就是后援会数据组<strong>最想招的人</strong>！'},
+EODZ:{type:'EODZ',name:'广场舞宣传委员',tagline:'嘴强王者，安利机器📢',desc:'你可能是<strong>话最多的粉丝类型</strong>！'},
+EMCF:{type:'EMCF',name:'海王氪金玩家',tagline:'墙头无数，个个都爱给钱💰',desc:'你是品牌方<strong>最喜欢的粉丝类型</strong>！'},
+EMCZ:{type:'EMCZ',name:'多担白富美/帅',tagline:'看谁都喜欢，有钱但不一定花在你身上🙂',desc:'你是个<strong>谜一样的存在</strong>；'},
+EMDF:{type:'EMDF',name:'多平台数据战士',tagline:'N个墙头×N个平台=你的日常📋',desc:'你是<strong>最忙碌的追星人</strong>！'},
+EMDZ:{type:'EMDZ',name:'吃瓜一线群众',tagline:'啥都知道一点，啥都不太深入 🧊',desc:'你是追星圈的<strong>百事通</strong>！'},
+IOCF:{type:'IOCF',name:'沉默氪金刺客',tagline:'不声不响全买了，低调且富有🤑',desc:'你是品牌方和后援会<strong>最爱但最找不到的人</strong>！'},
+IOCZ:{type:'IOCZ',name:'佛系唯粉鉴赏家',tagline:'一个人静静喜欢，不争不抢⁉️',desc:'你的追星方式是：<strong>看着他就很开心了</strong>。'},
+IODF:{type:'IODF',name:'隐身数据苦力',tagline:'潜水做贡献，事了拉衣去🫥',desc:'你是后援会的<strong>隐形功臣</strong>！'},
+IODZ:{type:'IODZ',name:'云追星路人粉',tagline:'有好感但不多，划过就完事 👀',desc:'你可能都不觉得自己在"追星"。'},
+IMCF:{type:'IMCF',name:'多担氪金忍者',tagline:'个个都偷偷买，不让任何人知道 💰',desc:'你和IOCF很像，但区别是你<strong>不止一个正主</strong>。'},
+IMCZ:{type:'IMCZ',name:'多担佛系观众',tagline:'谁红喜欢谁，主打一个从众 🐟',desc:'你的追星原则很简单：<strong>谁火我喜欢谁</strong>。'},
+IMDF:{type:'IMDF',name:'潜水安利小能手',tagline:'不发原创但疯狂点赞转发 📤',desc:'你在任何平台都是<strong>活跃的透明人</strong>！'},
+IMDZ:{type:'IMDZ',name:'纯路人·误入此地',tagline:'……你确定在追星？🤔',desc:'老实说，IMDZ类型的朋友，我们不太确定你为什么会在这里做完这套测试。'}
+},deep:{
+EOCF:{type:'EOCF',name:'全心全意·燃烧型追星者',tagline:'你把追星当作人生中最投入的事情之一',analysis:'<h4>🔥 核心驱动力：情感的全情投入</h4><p>EOCF类型的追星者，是将<strong>追星视为一种生活方式</strong>的人。</p><div class="highlight"><strong>深度洞察：</strong>你需要注意的点是——当投入过高时，是否会影响现实生活？</div>',advice:'学会在热爱中保持平衡。',strength:['极致的行动力','强大的感染力','坚定的忠诚度'],weakness:['容易过度消耗','情绪波动较大']},
+EOCZ:{type:'EOCZ',name:'温暖从容·品质型追星者',tagline:'你用最舒适的方式，经营着一份安静的热爱',analysis:'<h4>🌸 核心驱动力：自我愉悦与情感满足</h4>',advice:'你已经做得很好了。',strength:['成熟的消费观','健康的心理状态'],weakness:['可能错过深度参与的乐趣']},
+EODF:{type:'EODF',name:'热行动派·数据战士',tagline:'你相信每一份努力都不会被辜负',analysis:'<h4>💡 核心驱动力：成就感与集体归属</h4>',advice:'你的执行力和热情是宝贵的资源。',strength:['极强的执行力','优秀的团队协作精神'],weakness:['容易陷入内卷']},
+EODZ:{type:'EODZ',name:'热情分享派·传播大使',tagline:'你的分享欲，是最好的安利',analysis:'<h4>📢 核心驱动力：连接与表达的渴望</h4>',advice:'你的表达能力是天分。',strength:['出色的表达能力','天然的亲和力'],weakness:['期望值有时过高']},
+EMCF:{type:'EMCF',name:'慷慨博爱派·多担赞助商',tagline:'你的爱很宽广，钱包也很忙',analysis:'<h4>💕 核心驱动力：多元审美与即时满足</h4>'},
+EMCZ:{type:'EMCZ',name:'随性游走派·自由灵魂',tagline:'喜欢就是喜欢，不需理由也不需负担',analysis:'<h4>🌊 核心驱动力：自由与轻松</h4>'},
+EMDF:{type:'EMDF',name:'全能务员·多线程操作大师',tagline:'你的手机里装着整个娱乐圈'},
+EMDZ:{type:'EMDZ',name:'圈内观察家·吃瓜懂王',tagline:'你知道的八卦比你追的星还多'},
+IOCF:{type:'IOCF',name:'静水流深·沉默守护者',tagline:'不说，不表示不爱；不发声，不代表不在'},
+IOCZ:{type:'IOCZ',name:'独处时光·静谋试赏者',tagline:'一个人听歌，一个人看剧，刚好好'},
+IODF:{type:'IODF',name:'幕后英雄·隐形贡献者',tagline:'做了很多，但从不需要掌声'},
+IODZ:{type:'IODZ',name:'云端漫游者·轻度参与者',tagline:'刷到了就看一眼，也是一种喜欢'},
+IMCF:{type:'IMCF',name:'秘密花园·多担氪金主'},
+IMCZ:{type:'IMCZ',name:'随波逐流·大众口味拥有者'},
+IMDF:{type:'IMDF',name:'沉默的支持者·隐形啦啦队'},
+IMDZ:{type:'IMDZ',name:'纯路人·误入此地',tagline:'……你怎么进来的？'}
+}};
+
+/* ===== 快速版 - 内娱 10题（每题4选项） ===== */
+var QUESTIONS_QUICK={cn:[
+{q:'你担突然发了一条微博动态，你的第一反应是？',options:[
+{text:'立刻转发+评论+去超话说一声！必须让全世界知道！',dim:'E'},
+{text:'默默点赞收藏，嘴角上扬五分钟就够了',dim:'I'},
+{text:'先截图存档，然后转发到粉丝群讨论',dim:'E'},
+{text:'心里开心一下，继续手头的事',dim:'I'}
+]},
+{q:'看到有人在黑你担，你会怎么做？',options:[
+{text:'冲上去理论！控评安排上！不能让他们乱说！',dim:'E'},
+{text:'默默举报，心里不舒服但懒得吵架',dim:'I'},
+{text:'在群里号召同担一起反击',dim:'E'},
+{text:'眼不见为净，直接屏蔽关键词',dim:'I'}
+]},
+{q:'如果有机会加入后援会核心群，你会？',options:[
+{text:'加！我要认识更多同担！',dim:'E'},
+{text:'算了，看官广就行，不想社交',dim:'I'},
+{text:'潜水围观就好，偶尔冒泡',dim:'I'},
+{text:'主动报名，想参与核心任务',dim:'E'}
+]},
+{q:'同时有两个很火的明星你觉得都很不错，你会？',options:[
+{text:'不行，我心里只能有一个人',dim:'O'},
+{text:'小孩子才做选择，我全都要，都是我的心肝宝贝！',dim:'M'},
+{text:'主要追一个，另一个偶尔看看',dim:'O'},
+{text:'雨露均沾，但也说不上爱得多热烈',dim:'M'}
+]},
+{q:'朋友给你安利另一个明星说"真的很值得喜欢"，你会？',options:[
+{text:'礼貌微笑：不了不了，我家那位已经够我忙的了',dim:'O'},
+{text:'好啊，我倒要看看是什么样的人',dim:'M'},
+{text:'听听看，但应该不会入坑',dim:'O'},
+{text:'好的！我正好想找个新墙头',dim:'M'}
+]},
+{q:'正主宣了一个新代言，价格有点小贵，你会？',options:[
+{text:'买！首发！必须冲销量第一波！',dim:'C'},
+{text:'转发安利一下，让有钱的姐妹去买',dim:'D'},
+{text:'看看预算，能负担就买',dim:'C'},
+{text:'不做数据也不买，纯白嫖',dim:'D'}
+]},
+{q:'后援会在组织打投冲榜，需要天天花一小时做任务，你会？',options:[
+{text:'我氪金找人代做/直接捐款给数据站',dim:'C'},
+{text:'我来做！天天打卡完成任务！',dim:'D'},
+{text:'有空就做，没空就算了',dim:'Z'},
+{text:'积极参与，带动更多人一起',dim:'F'}
+]},
+{q:'你最骄傲的一次追星成就是？',options:[
+{text:'买齐了所有周边/专辑/代言产品',dim:'C'},
+{text:'做了一个播放量很高的安利视频/爆文',dim:'D'},
+{text:'在现场见到了自担！',dim:'F'},
+{text:'坚持签到超话等级很高',dim:'F'}
+]},
+{q:'你担凌晨两点发了条"晚安"，而你已经睡了，第二天早上看到你会？',options:[
+{text:'懊恼！为什么我没守着！下次一定熬夜等！',dim:'F'},
+{text:'哈哈可爱，点赞收藏',dim:'Z'},
+{text:'截图发群："昨晚错过了啊啊啊"',dim:'F'},
+{text:'嗯看到了，继续睡回笼觉',dim:'Z'}
+]},
+{q:'你担要开演唱会但不在你的城市，最近的也要坐高铁3小时',options:[
+{text:'票呢？给我来一张！酒店也订好了！',dim:'F'},
+{text:'线上看直播也一样，还省钱',dim:'Z'},
+{text:'看票价和时间再说',dim:'Z'},
+{text:'约上姐妹一起去！',dim:'F'}
+]}
+],kr:[
+{q:'你担在Weverse上发了新动态，你会？',options:[
+{text:'立刻截图发到各种社交媒体带话题！翻译！二次创作！',dim:'E'},
+{text:'默默点赞+收藏+反复看一百遍',dim:'I'},
+{text:'转发到粉丝群一起激动',dim:'E'},
+{text:'在心里偷笑，但不对外说',dim:'I'}
+]},
+{q:'看到别家外国粉丝在Twitter上说你担不好看，你会？',options:[
+{text:'用英文怼回去！带上数据图和精修图！',dim:'E'},
+{text:'默默举报+屏蔽，眼不见为净',dim:'I'},
+{text:'在粉丝群里吐槽这群人',dim:'E'},
+{text:'无所谓，各花入各眼',dim:'I'}
+]},
+{q:'回归期到了！公司发布了预告时间表，你会？',options:[
+{text:'转发到所有群！召集作战会议！',dim:'E'},
+{text:'自己默默记下时间就行',dim:'I'},
+{text:'设好每个时间点的闹钟',dim:'F'},
+{text:'大概了解就行，到时候再看',dim:'Z'}
+]},
+{q:'同一个回归期你同时担的两个团都很绝，你会？',options:[
+{text:'只给本命团刷音源，其他的没空',dim:'O'},
+{text:'两边都刷！都要一位！我全能！',dim:'M'},
+{text:'以本命团为主，另一个有空帮忙',dim:'O'},
+{text:'两个都追，公平对待',dim:'M'}
+]},
+{q:'朋友说"这个新团的神颜你应该看看"，你会？',options:[
+{text:'用不了我心里有人了（捂耳朵）',dim:'O'},
+{text:'好啊，我倒要看看是什么样的人',dim:'M'},
+{text:'看看但不一定会入坑',dim:'O'},
+{text:'好的！我正好想找个新墙头',dim:'M'}
+]},
+{q:'抽到了本命的小卡，但有人出三倍价格收，你会？',options:[
+{text:'不卖！这是我和他之间命运的见证！',dim:'O'},
+{text:'……三倍？卖了我可以再抽20张',dim:'M'},
+{text:'犹豫很久最后还是不卖',dim:'O'},
+{text:'看情况，如果最近缺钱可能卖',dim:'M'}
+]},
+{q:'回归专辑出来了，有普通版和昂贵的限定版（含随机小卡），你会？',options:[
+{text:'限定版来一套！两套！还要冲签售！',dim:'C'},
+{text:'买张普通版听歌就好，剩下的钱拿去刷视频',dim:'D'},
+{text:'纠结很久还是觉得限定版太贵，买了普通版',dim:'D'},
+{text:'找拼单一起买限定版',dim:'C'}
+]},
+{q:'音源成绩不太好，大吧在号召全员刷榜，你会？',options:[
+{text:'我捐钱给大吧买宣传',dim:'C'},
+{text:'亲自上阵！天天蹲点刷到凌晨！',dim:'D'},
+{text:'有空就刷，没空就算',dim:'Z'},
+{text:'动员身边的朋友一起帮忙',dim:'E'}
+]},
+{q:'你追星以来花钱最多的一次是？',options:[
+{text:'买专辑/小卡/演唱会门票/签售名额',dim:'C'},
+{text:'做字幕/翻译/修图/剪辑/管理粉丝站',dim:'D'},
+{text:'飞去看演唱会/签售的路费酒店',dim:'F'},
+{text:'其实花得不多，比较佛系',dim:'Z'}
+]},
+{q:'正主的Weverse Live通知凌晨3点（韩国时间），你会？',options:[
+{text:'调闹钟！爬起来看直播！实时截图发各大社交媒体！',dim:'F'},
+{text:'……第二天看回放吧',dim:'Z'},
+{text:'如果周末就看，工作日算了吧',dim:'Z'},
+{text:'设好闹钟能起就起',dim:'F'}
+]}
+]};
+
+/* ===== 深度版 - 内娱 38题（每题4选项） ===== */
+var QUESTIONS_DEEP={cn:[
+{q:'在追星圈里，你更倾向于哪种社交模式？',options:[
+{text:'社交悍匪！加群、认识新朋友、公共区域互动，超话里有你的位置',dim:'E'},
+{text:'潜水党！点赞、收藏、默默关注，很少主动说话',dim:'I'},
+{text:'只在熟悉的小圈子里活跃',dim:'I'},
+{text:'哪里都能聊，自来熟类型',dim:'E'}
+]},
+{q:'当你担被黑稿攻击时，你的第一反应是？',options:[
+{text:'立刻参战模式！组织语言、数据分析、控评上线',dim:'E'},
+{text:'心情沉重，默默举报关键词，等风头过后再出现',dim:'I'},
+{text:'在核心粉丝群讨论对策',dim:'E'},
+{text:'不去看那些负面内容，保护心情',dim:'I'}
+]},
+{q:'后援会开启新人招募，你会？',options:[
+{text:'主动报名！我要进入核心圈子，认识更多同好',dim:'E'},
+{text:'观望即可，不会主动加入，但会默默点赞',dim:'I'},
+{text:'看招募要求，合适的就试一下',dim:'I'},
+{text:'拉着闺蜜一起报名',dim:'E'}
+]},
+{q:'对你来说，"唯一"的意义是？',options:[
+{text:'唯一就是命！我的心只能装下一个人',dim:'O'},
+{text:'爱是广阔的！我的心可以分成N份，每份都是真心的',dim:'M'},
+{text:'有一个本命，其他的是"路好"',dim:'O'},
+{text:'没有唯一，每个都是独特的喜欢',dim:'M'}
+]},
+{q:'当朋友向你安利其他明星时，你的内心独白是？',options:[
+{text:'……懒得解释，但心里有点不舒服',dim:'O'},
+{text:'哈！我也正好喜欢！来讨论一下！',dim:'M'},
+{text:'礼貌性听听，不会真的入坑',dim:'O'},
+{text:'行，先看看吧万一呢',dim:'M'}
+]},
+{q:'你如何看待"同时追多个明星"的追星人？',options:[
+{text:'我理解但自己做不到，精力集中在一个人身上',dim:'O'},
+{text:'很正常啊！每个人都给我带来不同的快乐',dim:'M'},
+{text:'只要不影响对正主的爱就行',dim:'O'},
+{text:'我也是这样的，很正常',dim:'M'}
+]},
+{q:'你担生日应援活动开启了，你更倾向于？',options:[
+{text:'全方位支持！集资、周边、后援会任务全部参与',dim:'C'},
+{text:'用创意方式表达爱意！写文、做图、剪辑视频',dim:'D'},
+{text:'量力而行，适当参与',dim:'C'},
+{text:'主要做免费的数据任务',dim:'D'}
+]},
+{q:'当后援会组织募集活动经费时，你更倾向于？',options:[
+{text:'直接捐款，量力而行，让有能力的人去花时间',dim:'C'},
+{text:'我更愿意出时间和精力去做具体事情',dim:'D'},
+{text:'看情况，这次有钱就捐钱',dim:'C'},
+{text:'我出力不出钱',dim:'D'}
+]},
+{q:'你觉得哪种支持方式更有价值？',options:[
+{text:'金钱支持是最直接的表白，能让商业价值更高',dim:'C'},
+{text:'数据、内容创作和人气的积累才是长期价值',dim:'D'},
+{text:'两种都有价值，看个人能力',dim:'C'},
+{text:'用心最重要，形式不重要',dim:'D'}
+]},
+{q:'对你而言，追星的节奏更接近？',options:[
+{text:'紧跟型！每一个动态都要知道，不能错过任何事件',dim:'F'},
+{text:'佛系追星！有空就看看，没空就忙自己的',dim:'Z'},
+{text:'重要事件紧跟，平时随意',dim:'Z'},
+{text:'基本每天都看，但不会焦虑',dim:'F'}
+]},
+{q:'自担发布新歌在凌晨，你的做法是？',options:[
+{text:'设闹钟起来听！第一时间转发分享',dim:'F'},
+{text:'第二天再听吧，又不急这一会',dim:'Z'},
+{text:'如果周末就熬一下，工作日算了吧',dim:'Z'},
+{text:'等着别人剪辑的精华版看',dim:'Z'}
+]},
+{q:'如果追星影响到你的工作/学习，你会？',options:[
+{text:'调整时间表，尽量不错过重要事件',dim:'F'},
+{text:'实在忙的时候先放放，等空了再看',dim:'Z'},
+{text:'设定固定追星时间，其余时间专注现实',dim:'Z'},
+{text:'少睡一点也要追完',dim:'F'}
+]},
+{q:'你如何看待追星中的消费行为？',options:[
+{text:'追星就是我的娱乐消费，值得为快乐付费',dim:'C'},
+{text:'理性消费，不会因为追星而超支',dim:'D'},
+{text:'重要的才买，不盲目氪金',dim:'C'},
+{text:'尽量白嫖，省钱为主',dim:'D'}
+]},
+{q:'对于追星中的同担压力，你的态度是？',options:[
+{text:'有时感觉压力很大，担心自己不够努力',dim:'F'},
+{text:'我追我的，别人怎么说不管',dim:'Z'},
+{text:'适度压力是动力',dim:'F'},
+{text:'完全不在意别人的看法',dim:'Z'}
+]},
+{q:'你更喜欢哪种追星圈的氛围？',options:[
+{text:'热血、有干劲、有集体荣誉感的社区',dim:'E'},
+{text:'平静、自由、互不干扰的氛围',dim:'I'},
+{text:'温馨和谐、像一个大家庭',dim:'E'},
+{text:'各自安好、偶尔互动',dim:'I'}
+]},
+{q:'你如何处理多个明星之间的选择冲突？',options:[
+{text:'我有一个本命，其他只是顺便看看',dim:'O'},
+{text:'每个都是独立的喜好，没有主次之分',dim:'M'},
+{text:'以时间和精力分配决定主次',dim:'O'},
+{text:'不冲突，每个人给的快乐不同',dim:'M'}
+]},
+{q:'如果让你选择一种追星方式坚持一辈子，会选？',options:[
+{text:'作为忠实的消费者，持续为商业价值投票',dim:'C'},
+{text:'作为内容创作者，用作品记录这段时光',dim:'D'},
+{text:'做一个安静的支持者和欣赏者',dim:'Z'},
+{text:'做一个活跃的社区参与者',dim:'E'}
+]},
+{q:'你追星的最大动力来源于？',options:[
+{text:'想和同担们一起分享喜悦和激动',dim:'E'},
+{text:'内心对这个人的纯粹喜爱和感动',dim:'I'},
+{text:'追星带来的快乐和治愈',dim:'I'},
+{text:'集体活动的归属感和参与感',dim:'E'}
+]},
+{q:'将来回首追星时光，你最怀念的是？',options:[
+{text:'和同担们一起应援的日子',dim:'E'},
+{text:'那个安静看他亮相的晚上',dim:'I'},
+{text:'每次拿到周边/专辑时的兴奋',dim:'C'},
+{text:'第一次见到自担现场的时刻',dim:'F'}
+]},
+{q:'如果你的追星MBTI有一个副标签，你希望是？',options:[
+{text:'有追星高光的资深追星人',dim:'E'},
+{text:'安静的长期主义者',dim:'I'},
+{text:'全能型的六边形战士',dim:'E'},
+{text:'深度的情感共鸣者',dim:'I'}
+]},
+{q:'当你担的作品获得大奖时，你的反应是？',options:[
+{text:'疯狂转发！哭！发长文庆祝！',dim:'E'},
+{text:'默默流泪，截下图存起来',dim:'I'},
+{text:'在群里和同担一起激动',dim:'E'},
+{text:'心里特别骄傲，但表现得很淡定',dim:'I'}
+]},
+{q:'你更享受追星的哪个阶段？',options:[
+{text:'刚入坑时每天发现新事物的兴奋期',dim:'F'},
+{text:'深入了解后的稳定陪伴期',dim:'Z'},
+{text:'每个阶段都有不同的乐趣',dim:'F'},
+{text:'越久越有感情的老粉时期',dim:'Z'}
+]},
+{q:'对于追星中的"产出"（写文/做图/剪视频），你会？',options:[
+{text:'经常产粮！享受创作的过程',dim:'D'},
+{text:'只看不产出，做个快乐的消费者',dim:'C'},
+{text:'偶尔有灵感会产出一些',dim:'D'},
+{text:'想学但还没开始',dim:'Z'}
+]},
+{q:'你如何看待"脱粉回踩"这种现象？',options:[
+{text:'理解但自己永远不会这样做',dim:'O'},
+{text:'每个人的选择，尊重就好',dim:'M'},
+{text:'可以脱粉但不必伤害',dim:'O'},
+{text:'追星就是要自己快乐第一',dim:'M'}
+]},
+{q:'你担的风格突然大转变，你的反应是？',options:[
+{text:'支持！艺术家就该不断突破！',dim:'F'},
+{text:'需要时间适应，但还是喜欢的',dim:'Z'},
+{text:'只要他开心就好',dim:'Z'},
+{text:'有点惊讶但期待新风格',dim:'F'}
+]},
+{q:'你在现实中会主动提到自己追星吗？',options:[
+{text:'会！这是我生活的重要部分',dim:'E'},
+{text:'只有关系很好的人才知道',dim:'I'},
+{text:'被问到了就承认',dim:'I'},
+{text:'会在合适的场合自然提及',dim:'E'}
+]},
+{q:'你最希望从追星中获得什么？',options:[
+{text:'快乐和情绪价值',dim:'I'},
+{text:'社交和归属感',dim:'E'},
+{text:'成长和创作的动力',dim:'D'},
+{text:'每一个值得纪念的经历',dim:'F'}
+]},
+{q:'你追星的「最高消费纪录」属于哪个级别？',options:[
+{text:'四位数为某个项目一掷千金',dim:'C'},
+{text:'累计花了五位数以上',dim:'C'},
+{text:'控制在千元以内，理性消费',dim:'D'},
+{text:'基本不怎么花钱，白嫖型选手',dim:'D'}
+]},
+{q:'当你担被传绯闻/恋情时，你的第一反应？',options:[
+{text:'"不可能！！"愤怒否认并寻找辟谣证据',dim:'F'},
+{text:'"如果是真的……祝福吧"虽然心里酸酸的',dim:'Z'},
+{text:'先冷静观察，等待官方回应',dim:'Z'},
+{text:'在群里和大家一起讨论分析',dim:'E'}
+]},
+{q:'你有没有因为追星而改变过自己的人生规划？',options:[
+{text:'"有！为了追星学了新语言/新技能"',dim:'F'},
+{text:'"没有，追星和生活是分开的"',dim:'Z'},
+{text:'"间接影响了一些选择"',dim:'Z'},
+{text:'"追星让我变得更积极向上"',dim:'F'}
+]},
+{q:'你更愿意用哪种方式向你担表达心意？',options:[
+{text:'写信/卡片，文字比什么都真诚',dim:'I'},
+{text:'在现场大声应援，让他听到！',dim:'E'},
+{text:'做一份用心的小礼物/手工',dim:'D'},
+{text:'用实际行动支持他的每一个作品',dim:'C'}
+]},
+{q:'如果你担演了一部质量一般的剧/出了不太满意的作品，你会？',options:[
+{text:'"必须吹！我家孩子最棒！"就这样溺爱',dim:'O'},
+{text:'"确实一般……但我会温和地提建议"',dim:'M'},
+{text:'不公开评价，私下和朋友聊聊',dim:'I'},
+{text:'该批评就批评，希望下次更好',dim:'E'}
+]},
+{q:'你在追星圈子里的「人设」更像？',options:[
+{text:'组织者/领导者，大家有事找你',dim:'E'},
+{text:'潜水围观者，存在感较低',dim:'I'},
+{text:'创作者/产出大神',dim:'D'},
+{text:'氪金大佬/数据达人',dim:'C'}
+]},
+{q:'你理想中和自担的距离感是？',options:[
+{text:'越近越好！ dreams come true！',dim:'F'},
+{text:'保持适当的距离，远观最美',dim:'Z'},
+{text:'如果能被记住就很满足了',dim:'Z'},
+{text:'不需要太近，默默支持就好',dim:'I'}
+]},
+{q:'你对「毕业」（停止追星/脱粉）怎么看？',options:[
+{text:'"永远不说永远，但现阶段全心全意"',dim:'F'},
+{text:'"顺其自然，哪天不喜欢了就慢慢淡出"',dim:'Z'},
+{text:'"追星是一段美好的回忆，毕业也是正常的"',dim:'Z'},
+{text:'"只要他不退圈，我就一直在"',dim:'F'}
+]},
+{q:'如果让你用一个词形容你的追星态度，会是？',options:[
+{text:'"认真" — 全力以赴的那种',dim:'F'},
+{text:'"佛系" — 随缘快乐的那种',dim:'Z'},
+{text:'"理性" — 有底线有边界的那种',dim:'I'},
+{text:'"热情" — 燃烧生命的那种',dim:'E'}
+]},
+{q:'追星给你的现实生活带来了最大的改变是？',options:[
+{text:'认识了一群志同道合的好朋友',dim:'E'},
+{text:'学会了新技能（修图/剪辑/外语）',dim:'D'},
+{text:'情绪有了出口，生活更有动力',dim:'I'},
+{text:'变得更敢于表达自己了',dim:'E'}
+]},
+{q:'最后一个问题：你为什么会来做这个测试？',options:[
+{text:'好奇！想知道自己是哪种类型！',dim:'F'},
+{text:'无聊随便做做~',dim:'Z'},
+{text:'朋友推荐/看到的，来凑热闹',dim:'M'},
+{text:'我是认真的！想深度了解自己！',dim:'F'}
+]}
+],kr:[
+{q:'在韩娱追星圈，你的社交模式更接近？',options:[
+{text:'推特ig洋抖战士！用英文辩论、做数据图、参与外国粉对线',dim:'E'},
+{text:'Weverse隐士！点赞收藏默默关注，少说话多做事',dim:'I'},
+{text:'更多是在粉丝群里活跃',dim:'E'},
+{text:'佛系透明人模式',dim:'I'}
+]},
+{q:'当你担小卡在竞拍网站被高价转卖时，你会？',options:[
+{text:'气的关帖子！评论谴责卖家！',dim:'E'},
+{text:'心疼但沉默，私下和好友吐槽',dim:'I'},
+{text:'"市场经济没办法"默默接受',dim:'I'},
+{text:'在社交媒体上表达不满',dim:'E'}
+]},
+{q:'回归期前大吧在招新（翻译/剪辑/数据），你会？',options:[
+{text:'我也要加入！想和更多同担一起努力',dim:'E'},
+{text:'尊重并感谢他们，但不会主动参加',dim:'I'},
+{text:'看时间安排，有空就想参与',dim:'I'},
+{text:'已经在核心团队里了',dim:'E'}
+]},
+{q:'你的小卡收藏模式是？',options:[
+{text:'只收本命的！其他的小卡没意义',dim:'O'},
+{text:'全收藏家！好看的有趣的全部要',dim:'M'},
+{text:'主要收本命的，偶尔收几张好看的',dim:'O'},
+{text:'看心情和钱包，随机收',dim:'M'}
+]},
+{q:'当同担向你推荐其他团的小卡时，你的反应是？',options:[
+{text:'笑笑拒绝："心装不下别人"',dim:'O'},
+{text:'眼睛一亮！发来瞧瞧！',dim:'M'},
+{text:'看看但应该不会入坑',dim:'O'},
+{text:'可以啊！正在考虑要不要多担',dim:'M'}
+]},
+{q:'你如何看待"多担"的追星文化？',options:[
+{text:'理解但自己是only派，精力有限',dim:'O'},
+{text:'each gives me joy! 为什么要限制自己',dim:'M'},
+{text:'尊重每个人的选择',dim:'M'},
+{text:'只追一个才够专注',dim:'O'}
+]},
+{q:'专辑预售开启时，你更倾向于？',options:[
+{text:'全版购买！普通版+限定版+平台版+特典，一个不少',dim:'C'},
+{text:'买收藏版，其他等二手解决',dim:'D'},
+{text:'普通版+一个限定版，量力而行',dim:'C'},
+{text:'先听听音源再决定买不买',dim:'D'}
+]},
+{q:'签售会抽签开始，你的策略是？',options:[
+{text:'多买几个位增加中签率，等结果',dim:'C'},
+{text:'自己不抽签，帮忙做数据统计和进度更新',dim:'D'},
+{text:'买一个碰运气',dim:'Z'},
+{text:'找拼单一起买增加机会',dim:'C'}
+]},
+{q:'你觉得追星中最让人满足的时刻是？',options:[
+{text:'拆专的快乐！开小卡、拿到签名的那瞬间',dim:'C'},
+{text:'做出的内容被大家转发、点赞、使用',dim:'D'},
+{text:'在现场见到自担的那一刻',dim:'F'},
+{text:'回归成绩公布、拿到一位的时候',dim:'F'}
+]},
+{q:'你的追星节奏更接近？',options:[
+{text:'每一场演唱会、每一次签售、每一次FM都不能错过',dim:'F'},
+{text:'重要事件在场，平时有空就看',dim:'Z'},
+{text:'回归期紧跟，空白期佛系',dim:'Z'},
+{text:'基本每天都在线上关注',dim:'F'}
+]},
+{q:'你担的Weverse Live在韩国时间凌晨2点开播，你会？',options:[
+{text:'调闹钟起来！实时记录、截图、做翻译',dim:'F'},
+{text:'……第二天看回放吧',dim:'Z'},
+{text:'如果周末就看，工作日算了吧',dim:'Z'},
+{text:'设好闹钟能起就起',dim:'F'}
+]},
+{q:'你如何看待追星中的消费与投入比例？',options:[
+{text:'追星就是要花钱，同时也会做任务',dim:'C'},
+{text:'理性预算，优先级排好，最大化投入',dim:'D'},
+{text:'控制在自己能承受的范围内',dim:'C'},
+{text:'时间投入大于金钱投入',dim:'D'}
+]},
+{q:'在韩娱圈里，你更享受哪种氛围？',options:[
+{text:'热烈有干劲、社媒上的辩论气息',dim:'E'},
+{text:'安静的Weverse社区，平静分享喜悦',dim:'I'},
+{text:'签售会上和自担近距离接触',dim:'F'},
+{text:'演唱会现场的应援氛围',dim:'E'}
+]},
+{q:'对于二手市场上的小卡，你的态度是？',options:[
+{text:'不二手！只买官方渠道或签售',dim:'O'},
+{text:'也会看看二手！遇到喜欢的可能入',dim:'M'},
+{text:'只从信任的人那里收二手',dim:'O'},
+{text:'二手价格合适就会考虑',dim:'M'}
+]},
+{q:'你更愿意以哪种方式被正主记住？',options:[
+{text:'为他的商业成绩做出贡献',dim:'C'},
+{text:'作为文化传播者，用内容记录时光',dim:'D'},
+{text:'每次活动都到场的老面孔',dim:'F'},
+{text:'写过一封打动人心的信',dim:'I'}
+]},
+{q:'追星过程中，你最大的情绪来源是？',options:[
+{text:'和同担们共享激动的时刻',dim:'E'},
+{text:'和自担之间的互动连接感',dim:'I'},
+{text:'每次自担回归的期待和紧张感',dim:'F'},
+{text:'拿到周边/小卡时的幸福感',dim:'C'}
+]},
+{q:'如果追星是一段旅行，你希望自己是？',options:[
+{text:'团队核心成员，走过每一站',dim:'E'},
+{text:'一个人的旅行者，安静记录',dim:'I'},
+{text:'自由行者，随心停留',dim:'Z'},
+{text:'导游型，带着新人入坑',dim:'E'}
+]},
+{q:'你在推特/ig/洋抖上的追星账号状态？',options:[
+{text:'非常活跃！每天都有产出',dim:'E'},
+{text:'偶尔转发点赞，低频用户',dim:'I'},
+{text:'只看不发，潜水号',dim:'I'},
+{text:'专门做数据/翻译的产出账号',dim:'D'}
+]},
+{q:'对于「预录」（事前录制节目）和「生放」（直播公放），你更喜欢？',options:[
+{text:'生放！实时反应最真实！',dim:'F'},
+{text:'预录！画质好还能反复看！',dim:'Z'},
+{text:'都看！各有各的乐趣',dim:'F'},
+{text:'看时间和心情',dim:'Z'}
+]},
+{q:'当你担的团体出现人员变动时，你的反应是？',options:[
+{text:'"不可以！！"处于崩溃拒绝阶段',dim:'F'},
+{text:'天下没有不散的筵席',dim:'Z'},
+{text:'默默关注后续发展，希望大家都好',dim:'Z'},
+{text:'在粉丝群讨论分析各种可能性',dim:'E'}
+]},
+{q:'你有没有为了追星学过韩语？',options:[
+{text:'"正在学/已经学了"为了能看懂原版内容！',dim:'F'},
+{text:'"没正式学过"靠翻译组和机器翻译',dim:'Z'},
+{text:'学了一点基础，能看懂简单的内容',dim:'Z'},
+{text:'"精通/高级水平"可以自己做翻译',dim:'D'}
+]},
+{q:'你更倾向于哪种方式的应援？',options:[
+{text:'线下演唱会/ FM 的现场应援',dim:'F'},
+{text:'线上刷榜/ 做数据/ 翻译',dim:'D'},
+{text:'买专辑/ 收集周边',dim:'C'},
+{text:'在社交媒体上的安利和宣传',dim:'E'}
+]},
+{q:'如果你担来你的国家办巡演但票价被炒很高？',options:[
+{text:'"贵也要买！"人生难得一次！',dim:'F'},
+{text:'等降价或者看官方直播',dim:'Z'},
+{text:'看看能不能找到靠谱的票务',dim:'Z'},
+{text:'约上同担一起多对比几家再说',dim:'E'}
+]},
+{q:'你在 Melon/ Spotify 等平台的追星习惯？',options:[
+{text:'每天定时刷，维持收听排名',dim:'F'},
+{text:'想起来就听，不强求',dim:'Z'},
+{text:'主要在 YouTube 反复看 MV 和舞台',dim:'D'},
+{text:'下载到本地循环播放',dim:'I'}
+]},
+{q:'对于「入伍」这个不可避免的话题，你的心态？',options:[
+{text:'"不要提这个"会哭的',dim:'F'},
+{text:'"早就做好了心理准备"会等他回来的',dim:'Z'},
+{text:'利用这段时间补齐以前的物料',dim:'Z'},
+{text:'计划好入伍前的每一次见面机会',dim:'F'}
+]},
+{q:'你在追星上的「时间分配」大概是？',options:[
+{text:'每天 2 小时以上，固定追星时间',dim:'F'},
+{text:'碎片化时间看看，加起来不到 1 小时',dim:'Z'},
+{text:'回归期密集关注，空白期减少',dim:'Z'},
+{text:'有时间就追，没时间也能放下',dim:'F'}
+]},
+{q:'最后一个问题：你做这个测试的真实动机？',options:[
+{text:'真心想知道自己的追星人格！',dim:'F'},
+{text:'无聊/ 被安利的/ 凑热闹',dim:'Z'},
+{text:'想和朋友们对比结果',dim:'E'},
+{text:'顺便评估一下自己的追星状态',dim:'I'}
+]}
+]};
+
+/* ===== 状态管理 ===== */
+var state={
+  step:'welcome',
+  mode:null,
+  fandom:null,
+  currentQ:0,
+  answers:[],
+  scores:{E:0,I:0,O:0,M:0,C:0,D:0,F:0,Z:0},
+  computed:[]
+};
+
+function $(s){return document.querySelector(s);}
+
+function render(){
+  var app=$('#app');
+
+  if(state.step==='quiz'){
+    while(state.computed.length <= state.currentQ){
+      state.computed.push(false);
+    }
+  }
+
+  if(state.step==='welcome'){
+    app.innerHTML='<div class="welcome fade-in"><span class="sparkle">✨🌟💖</span><h1>追星MBTI<br>人格测试</h1><p class="subtitle">你是什么类型的追星人？16种人格等你来解锁 ✨</p><div class="mode-cards"><div class="mode-card quick" data-mode="quick"><span class="tag">⚡ 单类题数 · 10题</span><h3>快速版</h3><p>3分钟出结果，轻松简单</p><div class="meta">⏱ 约3分钟 | ⚡ 快速 | 📱 方便分享</div></div><div class="mode-card deep" data-mode="deep"><span class="tag">🧠 单类题数 · 约33题</span><h3>深度版</h3><p>8分钟深度分析，细致全面</p><div class="meta">⏱ 约8分钟 | 🧠 深度 | 📊 全面分析</div></div></div></div>';
+  }else if(state.step==='fandom'){
+    var mn=state.mode==='quick'?'⚡ 快速版':'🧠 深度版';
+    app.innerHTML='<div class="fandom-select fade-in"><h2>'+mn+' 已选中</h2><p>请选择你的追星圈层（题目会有所不同哦~）</p><div class="fandom-btns"><button class="fandom-btn cn" data-fandom="cn">🇨🇳 内娱</button><button class="fandom-btn kr" data-fandom="kr">🇰🇷 韩娱</button></div></div>';
+  }else if(state.step==='quiz'){
+    var Q=state.mode==='quick'?QUESTIONS_QUICK[state.fandom]:QUESTIONS_DEEP[state.fandom];
+    var total=Q.length;
+    var q=Q[state.currentQ];
+    var prog=(state.currentQ)/total*100;
+    var opts=q.options.map(function(o,i){
+      return '<div class="option '+(state.answers[state.currentQ]===i?'selected':'')+'" data-index="'+i+'"><span class="option-label">选项 '+String.fromCharCode(65+i)+'</span>'+o.text+'</div>';
+    }).join('');
+
+    app.innerHTML='<div class="quiz-area fade-in">'+
+      '<div class="progress-bar"><div class="progress-fill" style="width:'+prog+'%"></div></div>'+
+      '<div class="question-num">'+(state.currentQ+1)+' / '+total+'</div>'+
+      '<div class="question-text">'+q.q+'</div>'+
+      '<div class="options">'+opts+'</div>'+
+      '<div class="btn-group">'+
+        '<button class="btn-prev '+(state.currentQ===0?'disabled':'')+'" onclick="goPrev()">← 上一题</button>'+
+        '<button class="btn-next '+(state.answers[state.currentQ]===undefined?'disabled':'')+'" onclick="goNext()">'+(state.currentQ===total-1?'查看结果 ✨':'下一题 →')+'</button>'+
+      '</div>'+
+    '</div>';
+  }else if(state.step==='result'){
+    var sc=state.scores;
+    var ty=(sc.E>=sc.I?'E':'I')+(sc.O>=sc.M?'O':'M')+(sc.C>=sc.D?'C':'D')+(sc.F>=sc.Z?'F':'Z');
+    var rd=(state.mode==='quick'?RESULTS.quick[ty]:RESULTS.deep[ty])||{};
+    var dims=[
+      {k:['E','I'],l:'社交能量',a:sc.E,b:sc.I,nA:'外放',nB:'内敛',c:'#ff4d94'},
+      {k:['O','M'],l:'情感模式',a:sc.O,b:sc.M,nA:'唯一',nB:'多担',c:'#f59e0b'},
+      {k:['C','D'],l:'支持方式',a:sc.C,b:sc.D,nA:'氪金',nB:'搬砖',c:'#7c3aed'},
+      {k:['F','Z'],l:'追星节奏',a:sc.F,b:sc.Z,nA:'紧跟',nB:'佛系',c:'#00b896'}
+    ];
+    var mx=state.mode==='quick'?3:5;
+    var bars=dims.map(function(d){
+      return '<div class="bar-item"><div class="bar-label"><span>'+d.l+'：'+d.nA+' vs '+d.nB+'</span></div><div class="bar-track"><div class="bar-fill" style="width:'+Math.round(d.a/mx*100)+'%;background:'+d.c+'"></div></div></div>';
+    }).join('');
+    var deepHtml='';
+    if(state.mode==='deep'&&rd.analysis){
+      deepHtml='<div class="deep-analysis slide-up">'+rd.analysis+'</div>';
+      if(rd.advice) deepHtml+='<div class="deep-analysis slide-up"><h4>🌱 给你的建议</h4><p>'+rd.advice+'</p></div>';
+      if(rd.strength) deepHtml+='<div class="deep-analysis slide-up"><h4>✨ 你的优势</h4><p>'+rd.strength.map(function(s){return '• '+s;}).join('<br>')+'</p></div>';
+      if(rd.weakness) deepHtml+='<div class="deep-analysis slide-up"><h4>⚠️ 可以注意</h4><p>'+rd.weakness.map(function(w){return '• '+w;}).join('<br>')+'</p></div>';
+    }
+    app.innerHTML='<div class="result-area slide-up">'+
+      '<div class="result-type">'+ty+'</div>'+
+      '<div class="result-name">'+(rd.name||'神秘类型')+'</div>'+
+      '<div class="result-tagline">'+(rd.tagline||'')+'</div>'+
+      (rd.desc?'<div class="result-desc fade-in">'+rd.desc+'</div>' : '')+
+      '<div class="result-bars fade-in">'+bars+'</div>'+
+      deepHtml+
+      '<div class="share-section fade-in">'+
+        '<button class="btn-retest" onclick="location.reload()">🔄 再测一次</button>'+
+        '<button class="btn-share" onclick="shareResult()">📤 分享结果</button>'+
+      '</div></div>';
+  }
+  bindEvents();
+}
+
+function goPrev(){
+  if(state.currentQ===0 || state.step!=='quiz') return;
+
+  if(state.computed[state.currentQ]){
+    var Q=state.mode==='quick'?QUESTIONS_QUICK[state.fandom]:QUESTIONS_DEEP[state.fandom];
+    var si=state.answers[state.currentQ];
+    if(si!==undefined){
+      var sd=Q[state.currentQ].options[si].dim;
+      state.scores[sd]--;
+      state.computed[state.currentQ]=false;
+    }
+  }
+  state.currentQ--;
+  render();
+}
+
+function goNext(){
+  if(state.step!=='quiz') return;
+  var Q=state.mode==='quick'?QUESTIONS_QUICK[state.fandom]:QUESTIONS_DEEP[state.fandom];
+  var si=state.answers[state.currentQ];
+  if(si===undefined) return;
+
+  if(!state.computed[state.currentQ]){
+    var sd=Q[state.currentQ].options[si].dim;
+    state.scores[sd]++;
+    state.computed[state.currentQ]=true;
+  }
+
+  if(state.currentQ<Q.length-1){
+    state.currentQ++;
+    render();
+  }else{
+    state.step='result';
+    render();
+  }
+}
+
+function bindEvents(){
+  document.querySelectorAll('.mode-card').forEach(function(c){
+    c.addEventListener('click',function(){
+      state.mode=c.dataset.mode;
+      state.step='fandom';
+      render();
+    });
+  });
+
+  document.querySelectorAll('.fandom-btn').forEach(function(b){
+    b.addEventListener('click',function(){
+      state.fandom=b.dataset.fandom;
+      state.step='quiz';
+      state.currentQ=0;
+      state.answers=[];
+      state.scores={E:0,I:0,O:0,M:0,C:0,D:0,F:0,Z:0};
+      state.computed=[];
+      render();
+    });
+  });
+
+  document.querySelectorAll('.option').forEach(function(o){
+    o.addEventListener('click',function(){
+      var i=parseInt(o.dataset.index);
+      state.answers[state.currentQ]=i;
+
+      document.querySelectorAll('.option').forEach(function(x){
+        x.classList.remove('selected');
+      });
+      o.classList.add('selected');
+
+      var nextBtn=document.querySelector('.btn-next');
+      var prevBtn=document.querySelector('.btn-prev');
+      if(nextBtn) nextBtn.disabled=false;
+      if(prevBtn) prevBtn.disabled=(state.currentQ===0);
+    });
+  });
+}
+
+function shareResult(){
+  var ty=document.querySelector('.result-type')?document.querySelector('.result-type').textContent:'???';
+  var nm=document.querySelector('.result-name')?document.querySelector('.result-name').textContent:'';
+  var txt='🌙 我的追星MBTI结果【'+ty+'】'+nm+'！快来测试你是什么类型！';
+  if(navigator.share){
+    navigator.share({title:'追星MBTI测试',text:txt});
+  }else{
+    navigator.clipboard.writeText(txt).then(function(){
+      alert('结果已复制到剪贴板！可以去分享了~ ✨')
+    }).catch(function(){
+      prompt('复制以下内容分享：',txt);
+    });
+  }
+}
+
+document.addEventListener('DOMContentLoaded',render);
+</script>
+</body>
+</html>
